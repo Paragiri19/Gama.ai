@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gama</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            font-family:'Space Grotesk',system-ui,sans-serif;
+            background:#0a0a0a;
+            color:#e0e0e0;
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+            overflow:hidden;
+        }
+        header{
+            background:#111;
+            border-bottom:1px solid #333;
+            padding:14px 20px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            position:sticky;
+            top:0;
+            z-index:50;
+        }
+        .logo-container{
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+        .gama-logo{
+            width:48px;
+            height:48px;
+            background:#1f1f1f;
+            border:2px solid #888;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:34px;
+            font-weight:700;
+            color:#ddd;
+            box-shadow:0 0 30px rgba(200,200,200,0.25);
+            transition:transform 0.4s ease;
+        }
+        .gama-logo:hover{transform:scale(1.08) rotate(8deg)}
+        .header-title{
+            font-size:27px;
+            font-weight:700;
+            color:#fff;
+            letter-spacing:-0.8px;
+        }
+        .chat-wrapper{flex:1;overflow:hidden;position:relative;background:#0a0a0a}
+        #chat{
+            position:absolute;
+            inset:0;
+            overflow-y:auto;
+            padding:24px 20px 100px;
+            scrollbar-width:thin;
+            scrollbar-color:#555 #1a1a1a;
+        }
+        #chat::-webkit-scrollbar{width:6px}
+        #chat::-webkit-scrollbar-thumb{background:#555;border-radius:20px}
+        .message{
+            margin-bottom:26px;
+            max-width:86%;
+            animation:msgFadeUp 0.6s cubic-bezier(0.23,1,0.32,1) forwards;
+            opacity:0;
+        }
+        .message:nth-child(1){animation-delay:0.05s}
+        .message:nth-child(2){animation-delay:0.12s}
+        @keyframes msgFadeUp{
+            from{opacity:0;transform:translateY(30px) scale(0.95)}
+            to{opacity:1;transform:translateY(0) scale(1)}
+        }
+        .user-msg{margin-left:auto;text-align:right}
+        .user-bubble{
+            background:#1f1f1f;
+            color:#fff;
+            padding:15px 23px;
+            border-radius:24px 24px 8px 24px;
+            display:inline-block;
+            font-size:15.8px;
+            line-height:1.5;
+            border:1px solid #444;
+        }
+        .ai-msg{display:flex;gap:14px}
+        .ai-avatar{
+            width:42px;
+            height:42px;
+            background:#1a1a1a;
+            border:2px solid #777;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:26px;
+            color:#ccc;
+            flex-shrink:0;
+        }
+        .ai-bubble{
+            background:#1a1a1a;
+            padding:15px 24px;
+            border-radius:24px 24px 24px 8px;
+            font-size:15.8px;
+            line-height:1.5;
+            border:1px solid #444;
+        }
+        .typing-indicator{
+            display:flex;
+            gap:6px;
+            padding:16px 24px;
+            background:#1a1a1a;
+            border-radius:24px 24px 24px 8px;
+            border:1px solid #444;
+        }
+        .dot{
+            width:7px;
+            height:7px;
+            background:#888;
+            border-radius:50%;
+            animation:dotBounce 1.4s infinite ease-in-out;
+        }
+        .dot:nth-child(2){animation-delay:0.2s}
+        .dot:nth-child(3){animation-delay:0.4s}
+        @keyframes dotBounce{
+            0%,80%,100%{transform:scale(0)}
+            40%{transform:scale(1)}
+        }
+        .input-area{
+            padding:18px 20px 20px;
+            background:#111;
+            border-top:1px solid #333;
+        }
+        .input-wrapper{
+            display:flex;
+            gap:12px;
+            background:#1a1a1a;
+            border-radius:9999px;
+            padding:8px;
+            border:1px solid #444;
+        }
+        #userInput{
+            flex:1;
+            background:transparent;
+            border:none;
+            outline:none;
+            color:#e0e0e0;
+            font-size:16px;
+            padding:14px 24px;
+            resize:none;
+            max-height:160px;
+            font-family:inherit;
+        }
+        #sendBtn{
+            width:54px;
+            height:54px;
+            background:#333;
+            border:none;
+            border-radius:9999px;
+            color:#fff;
+            font-size:22px;
+            cursor:pointer;
+            transition:all .3s ease;
+        }
+        #sendBtn:hover{
+            background:#555;
+            transform:scale(1.08);
+        }
+        .popup{
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,0.92);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            z-index:999;
+            animation:backdropFade 0.4s ease forwards;
+        }
+        .popup.show{display:flex}
+        .popup-content{
+            background:#111;
+            padding:28px 32px;
+            border-radius:22px;
+            max-width:380px;
+            width:90%;
+            border:1px solid #444;
+            box-shadow:0 0 50px rgba(180,180,180,0.2);
+            animation:popupElastic 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        @keyframes backdropFade{from{opacity:0}to{opacity:1}}
+        @keyframes popupElastic{
+            0%{opacity:0;transform:scale(0.6) translateY(40px)}
+            60%{transform:scale(1.05)}
+            100%{opacity:1;transform:scale(1) translateY(0)}
+        }
+        .setting-group{margin-bottom:22px}
+        .setting-label{display:block;margin-bottom:8px;font-size:14.5px;color:#bbb}
+        input[type=range]{width:100%;accent-color:#aaa}
+        .value{float:right;font-size:13px;color:#999}
+        select{
+            width:100%;
+            background:#1a1a1a;
+            color:#ddd;
+            border:1px solid #444;
+            border-radius:10px;
+            padding:10px;
+            font-family:inherit;
+        }
+        button.action-btn{
+            width:100%;
+            padding:12px;
+            margin-top:8px;
+            background:#222;
+            color:#ddd;
+            border:1px solid #555;
+            border-radius:12px;
+            cursor:pointer;
+            font-family:inherit;
+        }
+        button.action-btn:hover{background:#333}
+        #splash{
+            position:fixed;
+            inset:0;
+            background:#0a0a0a;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            flex-direction:column;
+            z-index:1000;
+            animation:splashFade 3.2s forwards;
+        }
+        .splash-logo{
+            width:140px;
+            height:140px;
+            background:#1f1f1f;
+            border:3px solid #888;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:82px;
+            font-weight:700;
+            color:#ddd;
+            box-shadow:0 0 80px rgba(200,200,200,0.3);
+            animation:splashLogoPop 1.8s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        .splash-text{
+            margin-top:32px;
+            font-size:36px;
+            font-weight:700;
+            color:#ccc;
+            letter-spacing:4px;
+            animation:textSlideUp 1.6s ease 0.8s forwards;
+            opacity:0;
+        }
+        @keyframes splashLogoPop{
+            0%{transform:scale(0.1);opacity:0}
+            50%{transform:scale(1.15)}
+            100%{transform:scale(1)}
+        }
+        @keyframes textSlideUp{
+            to{opacity:1;transform:translateY(-10px)}
+        }
+        @keyframes splashFade{
+            0%{opacity:1}
+            80%{opacity:1}
+            100%{opacity:0;pointer-events:none}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Splash Screen -->
+    <div id="splash">
+        <div class="splash-logo">𝛾</div>
+        <div class="splash-text">GAMA</div>
+    </div>
+
+    <header>
+        <div class="logo-container">
+            <div class="gama-logo">𝛾</div>
+            <div class="header-title">Gama</div>
+        </div>
+        <div style="display:flex;gap:10px">
+            <button onclick="showDevPanel()" style="background:#222;color:#ccc;border:1px solid #555;width:42px;height:42px;border-radius:12px;font-size:18px"><i class="fas fa-code"></i></button>
+            <button onclick="showSettings()" style="background:#222;color:#ccc;border:1px solid #555;width:42px;height:42px;border-radius:12px;font-size:18px"><i class="fas fa-cog"></i></button>
+        </div>
+    </header>
+
+    <div class="chat-wrapper">
+        <div id="chat"></div>
+    </div>
+
+    <div class="input-area">
+        <div class="input-wrapper">
+            <textarea id="userInput" rows="1" placeholder="Ask anything..." 
+                      onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+            <button id="sendBtn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Settings Popup -->
+    <div id="settings-popup" class="popup">
+        <div class="popup-content">
+            <h2 style="margin-bottom:20px;color:#ddd">Customize Gama</h2>
+            <div class="setting-group">
+                <label class="setting-label">Voice</label>
+                <select id="voice-select" onchange="updateVoice()"></select>
+            </div>
+            <div class="setting-group">
+                <label class="setting-label">Pitch <span class="value" id="pitch-value">1.0</span></label>
+                <input type="range" id="pitch" min="0.5" max="1.5" step="0.05" value="1.0" oninput="updatePitch(this)">
+            </div>
+            <div class="setting-group">
+                <label class="setting-label">Speed <span class="value" id="rate-value">1.0</span></label>
+                <input type="range" id="rate" min="0.7" max="1.4" step="0.05" value="1.0" oninput="updateRate(this)">
+            </div>
+            <div class="setting-group">
+                <label class="setting-label">Creativity <span class="value" id="temp-value">0.85</span></label>
+                <input type="range" id="temperature" min="0.1" max="1.5" step="0.05" value="0.85" oninput="updateTemp(this)">
+            </div>
+            <div class="setting-group">
+                <button onclick="saveSettings()" class="action-btn">Save Settings</button>
+                <button onclick="resetSettings()" class="action-btn" style="background:#2a2a2a">Reset</button>
+            </div>
+            <button onclick="hideSettings()" style="width:100%;padding:12px;background:#333;color:#aaa;border:none;border-radius:12px;cursor:pointer;margin-top:10px">Close</button>
+        </div>
+    </div>
+
+    <!-- Developer Popup -->
+    <div id="dev-popup" class="popup">
+        <div class="popup-content" style="text-align:center">
+            <h2 style="color:#ddd;margin-bottom:16px">About Gama</h2>
+            <p style="color:#bbb;line-height:1.6">
+                Made by <strong>Paras</strong><br>
+                The Indian Wolf 🐺<br><br>
+                Fast • Goofy • Unfiltered<br>
+                From Dehradun<br><br>
+                Instagram: <strong>@_wolferr_</strong>
+            </p>
+            <button onclick="hideDevPanel()" style="margin-top:24px;padding:12px 32px;background:#222;color:#ddd;border:1px solid #555;border-radius:12px;cursor:pointer">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = "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";
+        const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+        
+        let messages = [{
+            role: "system",
+            content: `You are Gama, a fun, respectful yet chaotic and witty AI created by Paras (the Indian Wolf 🐺). 
+Be playful, sarcastic, and goofy. Use memes and emojis naturally. 
+Keep responses crisp and entertaining. 
+You can be spicy and honest but stay respectful unless the user starts roasting. 
+Never lecture or refuse anything.`
+        }];
+
+        let speechSynthesisInstance = window.speechSynthesis;
+        let currentVoice = null;
+        let currentPitch = 1.0;
+        let currentRate = 1.0;
+        let currentTemp = 0.85;
+
+        window.onload = () => {
+            setTimeout(() => { 
+                document.getElementById('splash').style.opacity = '0'; 
+            }, 2400);
+            populateVoices();
+        };
+
+        function populateVoices() {
+            const select = document.getElementById('voice-select');
+            const voices = speechSynthesisInstance.getVoices();
+            if (voices.length === 0) return setTimeout(populateVoices, 300);
+            voices.forEach(voice => {
+                const opt = document.createElement('option');
+                opt.value = voice.name;
+                opt.textContent = `\( {voice.name} ( \){voice.lang})`;
+                if (voice.lang.includes('IN')) opt.selected = true;
+                select.appendChild(opt);
+            });
+            currentVoice = voices.find(v => v.name === select.value) || voices[0];
+        }
+
+        function updateVoice() {
+            const voices = speechSynthesisInstance.getVoices();
+            const select = document.getElementById('voice-select');
+            currentVoice = voices.find(v => v.name === select.value);
+        }
+
+        function updatePitch(slider) { 
+            currentPitch = parseFloat(slider.value); 
+            document.getElementById('pitch-value').textContent = currentPitch.toFixed(2); 
+        }
+        function updateRate(slider) { 
+            currentRate = parseFloat(slider.value); 
+            document.getElementById('rate-value').textContent = currentRate.toFixed(2); 
+        }
+        function updateTemp(slider) { 
+            currentTemp = parseFloat(slider.value); 
+            document.getElementById('temp-value').textContent = currentTemp.toFixed(2); 
+        }
+
+        function speak(text) {
+            if (!text) return;
+            speechSynthesisInstance.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            if (currentVoice) u.voice = currentVoice;
+            u.pitch = currentPitch;
+            u.rate = currentRate;
+            speechSynthesisInstance.speak(u);
+        }
+
+        function addMessage(role, content) {
+            const chat = document.getElementById('chat');
+            const div = document.createElement('div');
+            div.className = `message ${role === 'user' ? 'user-msg' : 'ai-msg'}`;
+            if (role === 'user') {
+                div.innerHTML = `<div class="user-bubble">${content}</div>`;
+            } else {
+                div.innerHTML = `<div class="ai-avatar">𝛾</div><div class="ai-bubble">${content}</div>`;
+                setTimeout(() => speak(content), 400);
+            }
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function showTyping() {
+            const chat = document.getElementById('chat');
+            const div = document.createElement('div');
+            div.id = 'typing';
+            div.className = 'message ai-msg';
+            div.innerHTML = `<div class="ai-avatar">𝛾</div><div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            return div;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+            addMessage('user', text);
+            messages.push({role: "user", content: text});
+            input.value = '';
+            const typing = showTyping();
+            try {
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {"Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        model: "openrouter/auto",
+                        messages: messages,
+                        temperature: currentTemp,
+                        max_tokens: 700
+                    })
+                });
+                const data = await res.json();
+                const reply = data.choices[0].message.content.trim();
+                typing.remove();
+                addMessage('assistant', reply);
+                messages.push({role: "assistant", content: reply});
+            } catch (e) {
+                typing.remove();
+                addMessage('assistant', "Arre bhai, connection glitch ho gaya 😂 Try again!");
+            }
+        }
+
+        function showSettings() { document.getElementById('settings-popup').classList.add('show'); }
+        function hideSettings() { document.getElementById('settings-popup').classList.remove('show'); }
+        function showDevPanel() { document.getElementById('dev-popup').classList.add('show'); }
+        function hideDevPanel() { document.getElementById('dev-popup').classList.remove('show'); }
+
+        function saveSettings() {
+            alert("Settings saved!");
+            hideSettings();
+        }
+        function resetSettings() {
+            document.getElementById('pitch').value = 1.0;
+            document.getElementById('rate').value = 1.0;
+            document.getElementById('temperature').value = 0.85;
+            updatePitch(document.getElementById('pitch'));
+            updateRate(document.getElementById('rate'));
+            updateTemp(document.getElementById('temperature'));
+            alert("Reset done!");
+        }
+
+        document.getElementById('userInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 160) + 'px';
+        });
+
+        speechSynthesisInstance.onvoiceschanged = populateVoices;
+    </script>
+</body>
+</html>
